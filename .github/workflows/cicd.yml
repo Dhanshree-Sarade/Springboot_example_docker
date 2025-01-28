@@ -45,13 +45,13 @@ jobs:
         run: docker login -u ${{secrets.DOCKER_HUB_USERNAME}} -p ${{secrets.DOCKER_HUB_PASSWORD}}
 
       - name: Pull image from Docker Hub
-        run: docker pull dhanshreesarade/springboot-example-doc:latest
+        run: docker pull ${{secrets.DOCKER_HUB_USERNAME}}/springboot-example-doc:latest
 
       - name: Delete old container
         run: docker rm -f springboot-example-doc-container || true
 
       - name: Run Docker container
-        run: docker run -d -p 8080:8080 --name springboot-example-doc-container dhanshreesarade/springboot-example-doc:latest
+        run: docker run -d -p 8080:8080 --name springboot-example-doc-container ${{secrets.DOCKER_HUB_USERNAME}}/springboot-example-doc:latest
 
       - name: Ensure Docker permissions
         run: sudo usermod -aG docker ec2-user && newgrp docker
