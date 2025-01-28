@@ -10,43 +10,60 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Checkout the code
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          ref: deploy-to-ec2  # Explicitly checkout the correct branch
 
+      # Step 2: Verify Dockerfile exists
+      - name: Verify Dockerfile exists
+        run: ls -lh Dockerfile
+
+      # Step 3: Set up JDK 17
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
 
+      # Step 4: Build the project with Maven
       - name: Build with Maven
         run: mvn clean package -DskipTests
 
+      # Step 5: Verify the built JAR file exists
       - name: Verify JAR file exists
         run: ls -lh target/
 
+      # Step 6: Login to Docker Hub
       - name: Login to Docker Hub
         run: docker login -u ${{secrets.DOCKER_HUB_USERNAME}} -p ${{secrets.DOCKER_HUB_PASSWORD}}
 
+      # Step 7: Build the Docker image
       - name: Build Docker image
         run: docker build -t ${{secrets.DOCKER_HUB_USERNAME}}/springboot-example-docker:latest .
 
+      # Step 8: Push the Docker image to Docker Hub
       - name: Publish image to Docker Hub
         run: docker push ${{secrets.DOCKER_HUB_USERNAME}}/springboot-example-docker:latest
-      
+
   deploy:
     needs: build
-    runs-on: [self-hosted, aws-ec2] # Ensure your EC2 instance is registered as a runner
+    runs-on: [self-hosted, aws-ec2] # Ensure your EC2 instance is registered as a GitHub Actions runner
 
     steps:
+      # Step 1: Login to Docker Hub
       - name: Login to Docker Hub
         run: docker login -u ${{secrets.DOCKER_HUB_USERNAME}} -p ${{secrets.DOCKER_HUB_PASSWORD}}
 
+      # Step 2: Pull the latest image from Docker Hub
       - name: Pull image from Docker Hub
         run: docker pull ${{secrets.DOCKER_HUB_USERNAME}}/springboot-example-docker:latest
 
+      # Step 3: Delete the old container (if exists)
       - name: Delete old container
         run: docker rm -f springboot-example-container || true
 
+      # Step 4: Run the new container
       - name: Run Docker container
         run: docker run -d -p 8080:8080 --name springboot-example-container ${{secrets.DOCKER_HUB_USERNAME}}/springboot-example-docker:latest
