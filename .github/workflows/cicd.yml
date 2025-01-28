@@ -31,10 +31,10 @@ jobs:
         run: docker login -u ${{secrets.DOCKER_HUB_USERNAME}} -p ${{secrets.DOCKER_HUB_PASSWORD}}
 
       - name: Build Docker image
-        run: docker build -t ${{secrets.DOCKER_HUB_USERNAME}}/springboot-example:latest .
+        run: docker build -t ${{secrets.DOCKER_HUB_USERNAME}}/springboot-example-doc:latest .
 
       - name: Publish image to Docker Hub
-        run: docker push ${{secrets.DOCKER_HUB_USERNAME}}/springboot-example:latest
+        run: docker push ${{secrets.DOCKER_HUB_USERNAME}}/springboot-example-doc:latest
       
   deploy:
     needs: build
@@ -45,13 +45,16 @@ jobs:
         run: docker login -u ${{secrets.DOCKER_HUB_USERNAME}} -p ${{secrets.DOCKER_HUB_PASSWORD}}
 
       - name: Pull image from Docker Hub
-        run: docker pull ${{secrets.DOCKER_HUB_USERNAME}}/springboot-example:latest
+        run: docker pull ${{secrets.DOCKER_HUB_USERNAME}}/springboot-example-doc:latest
 
       - name: Delete old container
-        run: docker rm -f springboot-example-container || true
+        run: docker rm -f springboot-example-doc-container || true
 
       - name: Run Docker container
-        run: docker run -d -p 8080:8080 --name springboot-example-container ${{secrets.DOCKER_HUB_USERNAME}}/springboot-example:latest
+        run: docker run -d -p 8080:8080 --name springboot-example-doc-container ${{secrets.DOCKER_HUB_USERNAME}}/springboot-example-doc:latest
+
+      - name: Ensure Docker permissions
+        run: sudo usermod -aG docker ec2-user && newgrp docker
 
         
         
