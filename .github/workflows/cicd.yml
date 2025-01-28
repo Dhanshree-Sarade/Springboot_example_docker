@@ -55,6 +55,10 @@ jobs:
 
       - name: Ensure Docker permissions
         run: sudo usermod -aG docker ec2-user && newgrp docker
+        
+      - name: Add user to Docker group
+        run: sudo usermod -aG docker $(whoami)
+
 
         
         
