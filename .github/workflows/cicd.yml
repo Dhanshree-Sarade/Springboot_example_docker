@@ -1,10 +1,8 @@
-
-
 name: Spring Boot CI/CD Pipeline
 
 on:
   push:
-    branches: 
+    branches:
       - deploy-to-ec2
 
 jobs:
@@ -38,8 +36,8 @@ jobs:
       
   deploy:
     needs: build
-    runs-on: aws-ec2  # Make sure this is properly set for your AWS EC2 instance
-    
+    runs-on: [self-hosted, aws-ec2] # Ensure your EC2 instance is registered as a runner
+
     steps:
       - name: Login to Docker Hub
         run: docker login -u ${{secrets.DOCKER_HUB_USERNAME}} -p ${{secrets.DOCKER_HUB_PASSWORD}}
